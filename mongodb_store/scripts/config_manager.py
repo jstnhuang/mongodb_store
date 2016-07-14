@@ -207,7 +207,7 @@ class ConfigManager(object):
         
         
     def _on_node_shutdown(self):
-        self._mongo_client.disconnect()
+        self._mongo_client.close()
 
     # Could just use the ros parameter server to get the params
     # but one day might not back onto the parameter server...
