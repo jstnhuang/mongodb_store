@@ -22,8 +22,9 @@ def check_connection_to_mongod(db_host, db_port):
     """
     if check_for_pymongo():
         try:
-            from pymongo import Connection
-            Connection(db_host, db_port)
+            from pymongo import MongoClient
+            client = MongoClient(db_host, db_port, serverSelectionTimeoutMS=1000)
+            client.server_info()
             return True
         except Exception as e:
             print("Error: %s" % str(e))
