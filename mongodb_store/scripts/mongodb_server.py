@@ -109,6 +109,7 @@ class MongoServer(object):
             os.setpgrp()
 #            signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+        #cmd = ["mongod","--dbpath",self._db_path,"--port",str(self._mongo_port),"--smallfiles","--bind_ip","127.0.0.1"]
         cmd = ["mongod","--dbpath",self._db_path,"--port",str(self._mongo_port),"--smallfiles"]
         if self.repl_set is not None:
             cmd.append("--replSet")
@@ -154,7 +155,7 @@ class MongoServer(object):
             rospy.logwarn("It looks like Mongo already died. Watch out as the DB might need recovery time at next run.")
             return
         try:
-            c = MongoClient(self._mongo_host,self._mongo_port)
+            c = MongoClient(port=self._mongo_port)
         except pymongo.errors.ConnectionFailure, c:
             pass
         try:

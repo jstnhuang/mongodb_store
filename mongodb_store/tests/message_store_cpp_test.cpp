@@ -129,12 +129,44 @@ TEST(ROSDatacentre, cppTest)
       p.orientation.z = i;
       messageStore.insert<Pose>(p);
     }
-    if(messageStore.query<Pose>(results, mongo::BSONObj(), mongo::BSONObj(), mongo::BSONObj(), false, 10)){
+    if(messageStore.query<Pose>(results, mongo::BSONObj(), mongo::BSONObj(), mongo::BSONObj(),false, 10)){
       EXPECT_EQ(10, results.size());
     }
     else {
       ADD_FAILURE() << "Documents are not limited";
     }
+    results.clear();
+    mongo::BSONObjBuilder builder;
+    builder.append("orientation",0);
+    if(messageStore.queryWithProjection<Pose>(results, mongo::BSONObj(), mongo::BSONObj(), mongo::BSONObj(), builder.obj(),false, 10)){
+      EXPECT_EQ(0,results[1]->orientation.z);
+    }
+    else {
+      ADD_FAILURE() << "Projection is not working correctly";
+    }
+
+    // non-wait insert
+    unsigned int msg_num_before_insert = 0, msg_num_after_insert = 0;
+    const std::string no_wait_name = "no_wait";
+    results.clear();
+    // query should not found before insert
+    if (messageStore.queryNamed<Pose>(no_wait_name, results, false)) {
+      ADD_FAILURE() << "failed query before insert no wait";
+    }
+
+    msg_num_before_insert = results.size();
+    for (int i = 0; i < 10; ++i) {
+      geometry_msgs::Pose p;
+      p.orientation.x = i;
+      messageStore.insertNamed<Pose>(no_wait_name, p, mongo::BSONObj(), /* wait = */false);
+    }
+    ros::Duration(2.0).sleep();
+    results.clear();
+    if (!messageStore.queryNamed<Pose>(no_wait_name, results, false)) {
+      ADD_FAILURE() << "failed query after insert no wait";
+    }
+    msg_num_after_insert = results.size();
+    EXPECT_GT(msg_num_after_insert, msg_num_before_insert);
 
     ROS_INFO_STREAM("happy here");
 }
