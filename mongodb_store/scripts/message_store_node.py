@@ -30,21 +30,20 @@ class MessageStore(object):
         if str(local_timeout).lower() == "none":
             local_timeout = None
 
+        db_host = rospy.get_param('mongodb_host')
+        db_port = rospy.get_param('mongodb_port')
 	if use_daemon:
-            db_host = rospy.get_param('mongodb_host')
-            db_port = rospy.get_param('mongodb_port')
-            is_daemon_alive = dc_util.check_connection_to_mongod(db_host, db_port)
-            if not is_daemon_alive:
-                raise Exception("No Daemon?")
+            pass
+            # This doesn't work with more recent versions of Mongo
+            #is_daemon_alive = dc_util.check_connection_to_mongod(db_host, db_port)
+            #if not is_daemon_alive:
+            #    raise Exception("No Daemon?")
         else:
 	  if use_localdatacenter:
             rospy.loginfo('Waiting for local datacentre (timeout: %s)' % str(local_timeout))
             have_dc = dc_util.wait_for_mongo(local_timeout)
             if not have_dc:
                 raise Exception("No Datacentre?")
-          # move these to after the wait_for_mongo check as they may not be set before the db is available
-          db_host = rospy.get_param('mongodb_host')
-          db_port = rospy.get_param('mongodb_port')
 
 
         self._mongo_client=MongoClient(db_host, db_port)
